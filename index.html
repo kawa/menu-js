@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>menu-js sample</title>
+		<link href="http://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
+		<style>
+			body {
+				font-family: 'Montserrat', sans-serif;
+				background-color: black;
+				margin: 0;
+				padding: 0;
+				background-color: #000;
+				overflow: hidden;
+			}
+			input {
+				font-family: 'Montserrat', sans-serif;
+			}
+			.screen {
+				text-align: center;
+				width: 1920px;
+				height: 1080px;
+				font-size: 38px;
+				color: #fff;
+				position: absolute;
+				display: none;
+			}
+			.button {
+				display: inline;
+				padding: 0.2em 1em 0.2em 1em;
+				border: 3px solid #fff;
+				border-radius: 1em;
+				text-align: center;
+			}
+			.button.focused {
+				color: #0f0;
+				border-color: #0f0;
+			}
+			.fieldtitle {
+				font-size: 0.9em;
+				line-height: 0.2em;
+			}
+			.textfield {
+				color: #fff;
+				font-size: 0.9em;
+				padding: 0.2em 0.6em 0.2em 0.6em;
+				border: 3px solid #fff;
+				border-radius: 0.5em;
+				background-color: transparent;
+			}
+			#error {
+				margin-top: 450px;
+			}
+			#processing {
+				margin-top: 500px;
+			}
+			#startup {
+				margin-top: 400px;
+				line-height: 2em;
+			}
+			#login {
+				margin-top: 250px;
+				line-height: 2em;
+			}
+			#main {
+				margin-top: 200px;
+			}
+			#mainmenu {
+				margin-top: 100px;
+				line-height: 2em;
+			}
+		</style>
+		<script src="menu.js"></script>
+		<script>
+		
+		function $(name) {
+			return document.getElementById(name);
+		}
+
+		function error(errorCode) {
+			$("errorcode").innerHTML = parseInt(errorCode);
+			ScreenManager.present("error");
+		}
+		
+		function loadData() {
+			$("username").value = localStorage.getItem("username");
+			$("password").value = localStorage.getItem("password");
+		}
+		
+		function saveData() {
+			localStorage.setItem("username", $("username").value);
+			localStorage.setItem("password", $("password").value);
+		}
+		
+		function login(username, password) {
+			ScreenManager.present("processing");
+			saveData();
+			setTimeout(function(){
+				ScreenManager.clearScreenStack();
+				ScreenManager.present("main");
+			}, 1000);
+		}
+		
+		function startup() {
+			ScreenManager.clearScreenStack();
+			ScreenManager.present("startup");
+		}
+		
+		ScreenManager.onload = function() {
+		
+			// Add Error Screen
+			var errorScreen = new Screen("error");
+			ScreenManager.append(errorScreen);
+			
+			// Add Processing Screen
+			var processingScreen = new Screen("processing");
+			processingScreen.modal = true;
+			ScreenManager.append(processingScreen);
+			
+			// Add Startup Screen
+			var startupScreen = new Screen("startup");
+			var startupScreenMenu = new Menu();
+			var startupscreenMenuLogin = new MenuItem("startupbutton");
+			startupscreenMenuLogin.action = function() {
+				ScreenManager.present("login");
+			}
+			startupScreenMenu.append(startupscreenMenuLogin);
+			startupScreen.setMenu(startupScreenMenu);
+			ScreenManager.append(startupScreen);
+			
+			// Add Login Screen
+			var loginScreen = new Screen("login");
+			var loginScreenMenu = new Menu();
+			loginScreenMenu.append(new MenuItem("username"));
+			loginScreenMenu.append(new MenuItem("password"));
+			var loginButton = new MenuItem("loginbutton");
+			loginButton.action = function() {
+				login($("username").value, $("password").value);
+			}
+			loginScreenMenu.append(loginButton);
+			loginScreen.setMenu(loginScreenMenu);
+			ScreenManager.append(loginScreen);
+			
+			// Add main screen
+			var mainScreen = new Screen("main");
+			// Add menu to main screen
+			var mainScreenMenu = new Menu();
+			// Add buttons to menu
+			{
+				// button1
+				var button1 = new MenuItem("button1");
+				button1.action = function() {
+					// TODO: Add action for button1
+					console.log("Button1 selected");
+				}
+				mainScreenMenu.append(button1);
+				// button2
+				var button2 = new MenuItem("button2");
+				button2.action = function() {
+					// TODO: Add action for button2
+					console.log("Button2 selected");
+				}
+				mainScreenMenu.append(button2);
+				// button3
+				var button3 = new MenuItem("button3");
+				button3.action = function() {
+					// TODO: Add action for button3
+					console.log("Button3 selected");
+				}
+				mainScreenMenu.append(button3);
+				// logout button
+				var logoutButton = new MenuItem("logoutbutton");
+				logoutButton.action = function() {
+					ScreenManager.present("processing");
+					// process logout
+					setTimeout(function(){
+						startup();
+					}, 1000);
+				}
+				mainScreenMenu.append(logoutButton);
+			}
+			mainScreen.setMenu(mainScreenMenu);
+			ScreenManager.append(mainScreen);
+			
+			//
+			// TODO: Add more screen, menu and buttons here
+			//
+			
+			// Load user data from localStorage
+			loadData();
+			
+			// Let's begin
+			startup();
+		}
+		</script>
+	</head>
+	<body>
+		<div class="screen" id="error">
+			<p>An error has occured.</p>
+			<p>Error code: <span id="errorcode"></span></p>
+		</div>
+		<div class="screen" id="processing">
+			<p>Processing. Please wait...</p>
+		</div>
+		<div class="screen" id="startup">
+			<p>Welcome</p>
+			<p class="button" id="startupbutton">START</p>
+		</div>
+		<div class="screen" id="login">
+			<p>LOGIN</p>
+			<div style="margin-bottom:1.5em">
+			<p class="fieldtitle">USERNAME</p>
+			<input type="email" class="textfield" id="username">
+			<p class="fieldtitle">PASSWORD</p>
+			<input type="password" class="textfield" id="password">
+			</div>
+			<p class="button" id="loginbutton">LOGIN</p>
+		</div>
+		<div class="screen" id="main">
+			<p>Main Menu</p>
+			<div id="mainmenu">
+				<p class="button" id="button1">Button1</p><br>
+				<p class="button" id="button2">Button2</p><br>
+				<p class="button" id="button3">Button3</p><br><br>
+				<p class="button" id="logoutbutton">LOGOUT</p>
+			</div>
+		</div>
+	</body>
+</html>
